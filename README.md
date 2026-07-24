@@ -18,7 +18,8 @@ sign-in — into one guided run. In Claude Code:
 Then start `/syl4:install` (or just ask to "install syl4"). It downloads the binary with the same
 checksum-verified installer described below, asks which server domain to connect to (default: `demo`, for
 `demo.sylfor.ai` — a bare name is qualified with `sylfor.ai`), runs `syl4 setup`, and signs you in to the
-server.
+server. The plugin ships the syl4 MCP server itself, so `/reload-plugins` connects it right after install —
+no session restart. The proxy it starts needs Node.js (`npx`) on `PATH`.
 
 The script install below is unchanged and remains the way to install for opencode and other harnesses.
 
@@ -108,7 +109,7 @@ control; publishing them on a syl4-owned domain is what will remove the need to 
 ## About this repository
 
 It holds published releases, the two files the script install flow needs — `install.sh` and this page — and
-the Claude Code plugin (`.claude-plugin/` and `skills/`). syl4's
+the Claude Code plugin (`.claude-plugin/`, `skills/`, and `scripts/`). syl4's
 source repository is private, and `curl` cannot download from a private repository, which is why the releases
 live here. Both files are written and reviewed in the source repository and overwritten here on every release,
 so edits made here would not survive. Issues and pull requests are not monitored — for help, ask your syl4

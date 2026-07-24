@@ -55,19 +55,28 @@ Derive the gateway address from the answer:
 ## 3. Run setup
 
 ```sh
-SYL4_ADDR=<gateway address> ~/.syl4/bin/syl4 setup
+SYL4_ADDR=<gateway address> ~/.syl4/bin/syl4 setup --skip-mcp
 ```
+
+`--skip-mcp` is deliberate: this plugin ships the syl4 MCP server
+itself (a proxy that reads the address setup stores), so setup must
+not also register one — two registrations named `syl4` would collide.
 
 Setup checks its prerequisites first — a **running** container engine
 (Docker, Podman, or nerdctl) and Claude Code — and if one is missing
 it names it and exits without changing anything: tell the user what is
 missing and stop.
 
-With prerequisites in place, setup registers the syl4 MCP server,
+With prerequisites in place, setup stores the gateway address,
 installs the syl4 skill into Claude Code, and finishes by starting the
 browser sign-in for the server it just connected to. When it prints a
 sign-in URL, show it to the user and wait for them to complete it in
 the browser.
+
+If the user ever ran `syl4 setup` WITHOUT this plugin before, a
+user-scoped MCP registration may linger and collide with the plugin's:
+check with `claude mcp get syl4`, and if one exists, remove it with
+`claude mcp remove -s user syl4`.
 
 ## 4. Confirm authentication
 
@@ -87,14 +96,14 @@ Run `~/.syl4/bin/syl4 version`, then confirm to the user along these
 lines:
 
 > syl4 `<version>` is installed and signed in to `<gateway address>`.
-> One last step: the MCP server that setup registered is only loaded
-> when a session starts, so exit this session with `/exit` and pick
-> it up again — conversation included — with `claude --continue`.
-> Then syl4 runs prompts reliably — try:
-> `syl4 what is the sum of first 100 integers`
+> One last step: type `/reload-plugins` to connect the syl4 MCP
+> server — no need to leave this session. Then syl4 runs prompts
+> reliably — try: `syl4 what is the sum of first 100 integers`
 
-The exit-and-resume matters: a running session cannot connect an MCP
-server registered mid-session, and `claude --continue` restores this
-conversation while loading the new registration. The first syl4
-prompt will open a browser once more — Claude Code acquires its own
-credential for the MCP server on first connect.
+`/reload-plugins` is typed by the user, not run by you — it is a
+Claude Code command, not a shell command. It connects the MCP server
+this plugin ships, which reads the gateway address setup just stored.
+The first connection opens a browser once more: the MCP leg acquires
+its own credential via the standard MCP OAuth flow, separate from the
+`syl4 login` execution credential. The proxy needs Node.js (`npx`) on
+`PATH`; if it is missing, say so and point at <https://nodejs.org>.
