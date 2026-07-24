@@ -24,15 +24,23 @@ Then run `syl4 setup` to configure the container engine, gateway address, and Cl
 ## Verifying what you downloaded
 
 Every release ships `syl4.attestation.jsonl`, a [Sigstore](https://www.sigstore.dev/) bundle covering all six
-binaries. Verifying it requires no GitHub account:
+binaries. Verifying it requires no GitHub account. The installer saves the bundle next to the binary — pinned to
+the release it installed — so after `install.sh`:
+
+```sh
+gh attestation verify ~/.syl4/bin/syl4 \
+  --bundle ~/.syl4/bin/syl4.attestation.jsonl --repo sylmarel/sylpy
+```
+
+For a binary downloaded by hand, fetch the bundle from the same release and point `--bundle` at it:
 
 ```sh
 curl -fsSLO https://github.com/sylmarel/syl4-releases/releases/latest/download/syl4.attestation.jsonl
-gh attestation verify syl4-darwin-arm64 \
-  --bundle syl4.attestation.jsonl --repo sylmarel/sylpy
 ```
 
-That proves these exact bytes were produced by syl4's build workflow from a specific source commit.
+Either way, a pass proves these exact bytes were produced by syl4's build workflow from a specific source
+commit. `install.sh` does not run this check itself: it is fetched from the same place as the binary, so a
+self-check would prove nothing that whoever replaced the binary could not also edit out.
 
 `--repo sylmarel/sylpy` is the part that carries the guarantee. The signature on its own only proves that _some_
 workflow built the file — anyone can obtain a valid signature for their own file from their own repository — so

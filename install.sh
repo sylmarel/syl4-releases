@@ -21,12 +21,14 @@
 #     never becomes executable.
 #     This is NOT a tamper defense and must not be described as one:
 #     SHA256SUMS ships from the same release as the binary, so anyone
-#     able to replace one can replace both. Provenance is the check that
-#     survives that, and it lives outside this script —
-#       gh attestation verify <binary> \
-#         --bundle syl4.attestation.jsonl --repo sylmarel/sylpy
-#     (see cli/README.md). Verifying it here would mean depending on gh,
-#     which this script deliberately does not.
+#     able to replace one can replace both.
+#   - Provenance is the check that does survive that, and this script
+#     deliberately does not perform it — it only fetches the bundle
+#     (pinned to the release installed) and prints the command. A script
+#     cannot attest to its own integrity: it arrives from the same origin
+#     as the binary, so whoever could swap the binary could equally strip
+#     the check or retarget --repo and still print "verified". It would
+#     also mean depending on gh, which is not on a stock box.
 #   - curl does not set com.apple.quarantine, so no xattr step is
 #     needed on macOS (the browser-download friction this replaces).
 #   - Installs to a no-sudo location, ~/.syl4/bin by default.
@@ -54,6 +56,7 @@ fail() {
 
 main() {
     REPO="sylmarel/syl4-releases"
+    BUNDLE="syl4.attestation.jsonl"
     INSTALL_DIR="${SYL4_INSTALL_DIR:-$HOME/.syl4/bin}"
     VERSION="${SYL4_VERSION:-}"
 
@@ -103,6 +106,18 @@ main() {
     curl -fsSL --proto '=https' -o "$tmp/SHA256SUMS" "$base/SHA256SUMS" \
         || fail "download failed: $base/SHA256SUMS"
 
+    # The provenance bundle, from the SAME base URL as the binary so it is
+    # pinned to the release actually installed: `latest` moves, and a bundle
+    # fetched later from a newer release does not cover this binary's digest
+    # — verification would then fail on a perfectly good install.
+    #
+    # Non-fatal: a release predating the bundle, or a blip fetching it, must
+    # not sink an install whose binary already checksum-verified.
+    have_bundle=0
+    if curl -fsSL --proto '=https' -o "$tmp/$BUNDLE" "$base/$BUNDLE"; then
+        have_bundle=1
+    fi
+
     # --- verify before making executable ---------------------------------
     want="$(awk -v a="$asset" '$2 == a { print $1 }' "$tmp/SHA256SUMS")"
     [ -n "$want" ] || fail "$asset not listed in SHA256SUMS"
@@ -117,8 +132,32 @@ main() {
     mkdir -p "$INSTALL_DIR" || fail "cannot create $INSTALL_DIR"
     chmod +x "$tmp/$asset"
     mv -f "$tmp/$asset" "$INSTALL_DIR/syl4" || fail "cannot install to $INSTALL_DIR"
+    if [ "$have_bundle" = 1 ]; then
+        mv -f "$tmp/$BUNDLE" "$INSTALL_DIR/$BUNDLE" || fail "cannot install to $INSTALL_DIR"
+    fi
 
     echo "Installed $("$INSTALL_DIR/syl4" version 2>/dev/null || echo syl4) to $INSTALL_DIR/syl4"
+
+    # Printed, never performed. This script is fetched from the same origin
+    # as the binary, so a self-check proves nothing: whoever could swap the
+    # binary could delete these lines or point --repo at a repository of
+    # their own and still print "verified". Verification only means
+    # something run separately, against an identity confirmed somewhere
+    # this output cannot reach.
+    if [ "$have_bundle" = 1 ]; then
+        echo ""
+        echo "Provenance bundle saved to $INSTALL_DIR/$BUNDLE."
+        echo "It was NOT checked here. To verify the binary yourself:"
+        echo ""
+        echo "  gh attestation verify $INSTALL_DIR/syl4 \\"
+        echo "    --bundle $INSTALL_DIR/$BUNDLE --repo sylmarel/sylpy"
+        echo ""
+        echo "Confirm that --repo value at https://github.com/$REPO —"
+        echo "installer output is not a source to trust it from."
+    else
+        echo ""
+        echo "No provenance bundle published for this release; nothing to verify against."
+    fi
 
     # A fresh binary is not usable until `syl4 setup` has validated the
     # container engine and registered the MCP server + skill, so name it
