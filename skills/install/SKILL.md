@@ -17,7 +17,23 @@ Perform the steps in order; each depends on the one before it. If a
 step fails, show the user the error and stop rather than improvising
 around it.
 
-## 1. Download the binary
+## 1. Ask for the server domain
+
+First, before anything is downloaded or written: ask the user which
+syl4 server to connect to. The answer is a server domain; the default
+is `demo` — offer it as such, alongside "the address from your invite"
+for users joining a private cluster. Asking first means the rest of
+the flow runs without interruption once the user has answered.
+
+Derive the gateway address from the answer:
+
+- already contains `://` → use it as-is
+- fully qualified (contains a `.`) → `https://<answer>`
+- a bare name, not fully qualified → qualify it with `sylfor.ai`:
+  `https://<answer>.sylfor.ai` — so the default `demo` becomes
+  `https://demo.sylfor.ai`
+
+## 2. Download the binary
 
 Run the installer that ships with this plugin:
 
@@ -37,20 +53,6 @@ checksum, and installs to `~/.syl4/bin/syl4` — no sudo. `~/.syl4/bin`
 is usually not on `PATH`: the installer prints the one line that adds
 it — relay that line to the user, and use the full path
 `~/.syl4/bin/syl4` for the remaining steps.
-
-## 2. Ask for the server domain
-
-Ask the user which syl4 server to connect to. The answer is a server
-domain; the default is `demo` — offer it as such, alongside "the
-address from your invite" for users joining a private cluster.
-
-Derive the gateway address from the answer:
-
-- already contains `://` → use it as-is
-- fully qualified (contains a `.`) → `https://<answer>`
-- a bare name, not fully qualified → qualify it with `sylfor.ai`:
-  `https://<answer>.sylfor.ai` — so the default `demo` becomes
-  `https://demo.sylfor.ai`
 
 ## 3. Run setup
 
@@ -90,20 +92,24 @@ user deferred it, initiate it directly:
 A successful sign-in stores the execution credential in
 `~/.syl4/credentials.json`.
 
-## 5. Wrap up
+## 5. Connect the MCP server and initiate its auth
 
 Run `~/.syl4/bin/syl4 version`, then confirm to the user along these
 lines:
 
 > syl4 `<version>` is installed and signed in to `<gateway address>`.
 > One last step: type `/reload-plugins` to connect the syl4 MCP
-> server — no need to leave this session. Then syl4 runs prompts
-> reliably — try: `syl4 what is the sum of first 100 integers`
+> server — no need to leave this session. Connecting will open the
+> browser one final time to authorize the MCP connection. After that,
+> syl4 runs prompts reliably — try:
+> `syl4 what is the sum of first 100 integers`
 
 `/reload-plugins` is typed by the user, not run by you — it is a
 Claude Code command, not a shell command. It connects the MCP server
-this plugin ships, which reads the gateway address setup just stored.
-The first connection opens a browser once more: the MCP leg acquires
-its own credential via the standard MCP OAuth flow, separate from the
-`syl4 login` execution credential. The proxy needs Node.js (`npx`) on
-`PATH`; if it is missing, say so and point at <https://nodejs.org>.
+this plugin ships, which reads the gateway address setup just stored,
+and the first connection initiates the MCP auth: a browser opens for
+the standard MCP OAuth flow, whose credential is separate from the
+`syl4 login` execution credential — warn the user so the second
+browser hop is expected, not alarming. The proxy needs Node.js
+(`npx`) on `PATH`; if it is missing, say so and point at
+<https://nodejs.org>.

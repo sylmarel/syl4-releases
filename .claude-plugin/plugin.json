@@ -9,6 +9,7 @@
   "homepage": "https://github.com/sylmarel/syl4-releases",
   "repository": "https://github.com/sylmarel/syl4-releases",
   "keywords": ["syl4", "verified-programs", "data"],
+  "hooks": "./hooks/hooks.json",
   "mcpServers": {
     "syl4": {
       "command": "sh",
