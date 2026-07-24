@@ -5,7 +5,23 @@ Code, syl4 turns your prompt into a program, and this client runs that program l
 cluster sees your prompt and your database's schema; your rows and the program's results stay on your machine,
 and the cluster is told only whether a run succeeded.
 
-## Install
+## Install as a Claude Code plugin
+
+If you work in Claude Code, the plugin in this repository wraps the whole flow — download, `syl4 setup`, and
+sign-in — into one guided run. In Claude Code:
+
+```text
+/plugin marketplace add sylmarel/syl4-releases
+/plugin install syl4@syl4
+```
+
+Then start `/syl4:install` (or just ask to "install syl4"). It downloads the binary with the same
+checksum-verified installer described below, asks which server domain to connect to (default: `demo`), runs
+`syl4 setup`, and signs you in to the server.
+
+The script install below is unchanged and remains the way to install for opencode and other harnesses.
+
+## Install with the script
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/sylmarel/syl4-releases/main/install.sh | sh
@@ -90,7 +106,8 @@ control; publishing them on a syl4-owned domain is what will remove the need to 
 
 ## About this repository
 
-It holds published releases, plus the two files the install flow needs — `install.sh` and this page. syl4's
+It holds published releases, the two files the script install flow needs — `install.sh` and this page — and
+the Claude Code plugin (`.claude-plugin/` and `skills/`). syl4's
 source repository is private, and `curl` cannot download from a private repository, which is why the releases
 live here. Both files are written and reviewed in the source repository and overwritten here on every release,
 so edits made here would not survive. Issues and pull requests are not monitored — for help, ask your syl4

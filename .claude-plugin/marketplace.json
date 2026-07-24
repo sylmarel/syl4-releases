@@ -1,0 +1,15 @@
+{
+  "name": "syl4",
+  "owner": {
+    "name": "Sylmarel",
+    "url": "https://github.com/sylmarel"
+  },
+  "description": "The syl4 plugin: install the syl4 CLI, connect it to a syl4 server, and run prompts reliably.",
+  "plugins": [
+    {
+      "name": "syl4",
+      "source": "./",
+      "description": "Runs prompts reliably using syl4. Installs the syl4 CLI, connects it to your server, and signs you in."
+    }
+  ]
+}
