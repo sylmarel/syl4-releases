@@ -22,6 +22,8 @@
 # Environment overrides:
 #   SYL4_VERSION      release tag to install (e.g. v0.0.1); default: latest
 #   SYL4_INSTALL_DIR  install directory; default: ~/.syl4/bin
+#   SYL4_SHOW_VERIFY  =1 to also print the provenance-verify command after
+#                     installing; default: off (the bundle is saved either way)
 
 set -u
 
@@ -59,6 +61,15 @@ main() {
     fi
     INSTALL_DIR="${SYL4_INSTALL_DIR:-$HOME/.syl4/bin}"
     VERSION="${SYL4_VERSION:-}"
+    # Provenance verification is opt-in. It is an advanced step — the how-to
+    # is on the release page and in the repo README — and printing it after
+    # the setup command clutters the path everyone actually takes. The bundle
+    # is still saved either way (see below); SYL4_SHOW_VERIFY=1 also prints
+    # the verify command here.
+    case "${SYL4_SHOW_VERIFY:-}" in
+        1 | true | yes | on) show_verify=1 ;;
+        *) show_verify=0 ;;
+    esac
 
     # --- platform detection ----------------------------------------------
     os="$(uname -s)"
@@ -246,12 +257,15 @@ main() {
     echo ""
     echo "  SYL4_ADDR=<your cluster address> $setup_cmd"
 
-    # Printed, never performed. This script arrives with the download, so a
-    # self-check proves nothing: whoever could swap the binary could delete
-    # these lines or point --signer-workflow at something of their own and
-    # still print "verified". Note the identity is NOT sourced from here or
-    # from any page this script could name — every one of those is inside
-    # the same blast radius. The person who invited the user is not.
+    # Opt-in (SYL4_SHOW_VERIFY); the common path ends at the setup step
+    # above. When shown, this is printed, never performed: the script
+    # arrives with the download, so a self-check proves nothing — whoever
+    # could swap the binary could delete these lines or point
+    # --signer-workflow at something of their own and still print
+    # "verified". The identity is deliberately NOT sourced from here or any
+    # page this script could name; the person who invited the user is
+    # outside that blast radius.
+    [ "$show_verify" = 1 ] || return 0
     if [ "$have_bundle" = 1 ]; then
         echo ""
         echo "A signature file was saved to $INSTALL_DIR/$BUNDLE."

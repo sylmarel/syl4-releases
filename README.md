@@ -68,6 +68,9 @@ tell your syl4 contact.** For a binary you downloaded by hand, the same signatur
 command also verifies `SHA256SUMS`. On a restricted network it needs to reach `tuf-repo.github.com` and
 `tuf-repo-cdn.sigstore.dev`.
 
+Installing with `SYL4_SHOW_VERIFY=1` set makes the installer print this command for you, filled in with your
+paths.
+
 The installer never runs this check itself: it arrives with the download, so anyone able to replace the binary
 could equally delete the check.
 
