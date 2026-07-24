@@ -16,8 +16,9 @@ sign-in — into one guided run. In Claude Code:
 ```
 
 Then start `/syl4:install` (or just ask to "install syl4"). It downloads the binary with the same
-checksum-verified installer described below, asks which server domain to connect to (default: `demo`), runs
-`syl4 setup`, and signs you in to the server.
+checksum-verified installer described below, asks which server domain to connect to (default: `demo`, for
+`demo.sylfor.ai` — a bare name is qualified with `sylfor.ai`), runs `syl4 setup`, and signs you in to the
+server.
 
 The script install below is unchanged and remains the way to install for opencode and other harnesses.
 

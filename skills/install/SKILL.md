@@ -47,7 +47,10 @@ address from your invite" for users joining a private cluster.
 Derive the gateway address from the answer:
 
 - already contains `://` → use it as-is
-- otherwise → `https://<answer>`
+- fully qualified (contains a `.`) → `https://<answer>`
+- a bare name, not fully qualified → qualify it with `sylfor.ai`:
+  `https://<answer>.sylfor.ai` — so the default `demo` becomes
+  `https://demo.sylfor.ai`
 
 ## 3. Run setup
 
@@ -84,8 +87,14 @@ Run `~/.syl4/bin/syl4 version`, then confirm to the user along these
 lines:
 
 > syl4 `<version>` is installed and signed in to `<gateway address>`.
-> syl4 runs prompts reliably — start a new Claude Code session and
-> try: `syl4 what is the sum of first 100 integers`
+> One last step: the MCP server that setup registered is only loaded
+> when a session starts, so exit this session with `/exit` and pick
+> it up again — conversation included — with `claude --continue`.
+> Then syl4 runs prompts reliably — try:
+> `syl4 what is the sum of first 100 integers`
 
-The new session matters: the MCP server and skill that setup
-registered are loaded at session start.
+The exit-and-resume matters: a running session cannot connect an MCP
+server registered mid-session, and `claude --continue` restores this
+conversation while loading the new registration. The first syl4
+prompt will open a browser once more — Claude Code acquires its own
+credential for the MCP server on first connect.
