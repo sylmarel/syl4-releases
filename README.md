@@ -1,8 +1,9 @@
 # syl4 CLI
 
-Release distribution for the `syl4` command-line client. The binaries here are built by CI in syl4's source
-repository (`sylmarel/sylpy`, private); this repository exists to host them publicly, because a release asset
-behind private-repo authentication cannot be fetched with a plain `curl`.
+`syl4` is the command-line half of syl4: it runs on your own machine, next to your data. You work in Claude
+Code, syl4 turns your prompt into a program, and this client runs that program locally in a container. The
+cluster sees your prompt and your database's schema; your rows and the program's results stay on your machine,
+and the cluster is told only whether a run succeeded.
 
 ## Install
 
@@ -10,49 +11,84 @@ behind private-repo authentication cannot be fetched with a plain `curl`.
 curl -fsSL https://raw.githubusercontent.com/sylmarel/syl4-releases/main/install.sh | sh
 ```
 
-Detects your OS and architecture, downloads the matching binary plus `SHA256SUMS`, verifies the checksum before
-making the file executable, and installs to `~/.syl4/bin/syl4`. No sudo required, and no macOS `xattr` step —
-`curl` does not set `com.apple.quarantine` the way a browser download does.
+That picks the right binary for your machine, checks the download arrived intact, and installs it to
+`~/.syl4/bin/syl4`. No `sudo`, and none of the security prompts a macOS browser download triggers.
 
-Then run `syl4 setup` to configure the container engine, gateway address, and Claude Code integration.
+`~/.syl4/bin` is usually not on your `PATH`. The installer prints the one line that adds it; until you run
+that, use the full path — `~/.syl4/bin/syl4` — wherever these instructions say `syl4`.
 
-- `SYL4_VERSION=v0.0.1` installs a specific release instead of the latest.
-- `SYL4_INSTALL_DIR=/usr/local/bin` installs somewhere other than `~/.syl4/bin`.
-- Windows has no install script — download `syl4-windows-<arch>.exe` from the
-  [releases page](https://github.com/sylmarel/syl4-releases/releases).
+Then connect it to your cluster, using the address you were given when you were invited:
+
+```sh
+SYL4_ADDR=<your cluster address> syl4 setup
+```
+
+Setup expects two things to be installed already:
+
+- a container engine that is **running** — Docker, Podman, or nerdctl
+- [Claude Code](https://claude.com/claude-code), which is how you talk to syl4
+
+It checks both before changing anything, so a missing one is named and nothing is left half-installed. When
+setup finishes, open Claude Code and start a syl4 prompt.
+
+### Options
+
+To pin a version, or install somewhere other than `~/.syl4/bin`:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/sylmarel/syl4-releases/main/install.sh \
+  | SYL4_VERSION=v0.0.1 SYL4_INSTALL_DIR=~/bin sh
+```
+
+Both settings must go **after** the `|`, in front of `sh`. In front of `curl` they are silently ignored and
+you get a default install. The install directory has to be one you can write to without `sudo`.
+
+Windows has no install script — download `syl4-windows-<arch>.exe` from the
+[releases page](https://github.com/sylmarel/syl4-releases/releases). To remove syl4, run `syl4 unregister`,
+then delete `~/.syl4`.
 
 ## Verifying what you downloaded
 
-Every release ships `syl4.attestation.jsonl`, a [Sigstore](https://www.sigstore.dev/) bundle covering all six
-binaries. Verifying it requires no GitHub account. The installer saves the bundle next to the binary — pinned to
-the release it installed — so after `install.sh`:
+The installer prints `Checksum verified.` before installing. Read that narrowly: the checksum file ships
+alongside the binary, so it shows your download arrived intact — not that the right file was published.
+
+The stronger check is optional and you run it yourself. It needs [GitHub's `gh` CLI](https://cli.github.com/),
+though not a GitHub account. The installer saves a signature file beside the binary, so after installing:
 
 ```sh
 gh attestation verify ~/.syl4/bin/syl4 \
-  --bundle ~/.syl4/bin/syl4.attestation.jsonl --repo sylmarel/sylpy
+  --bundle ~/.syl4/bin/syl4.attestation.jsonl \
+  --repo sylmarel/sylpy \
+  --signer-workflow sylmarel/sylpy/.github/workflows/cli-release.yml
 ```
 
-For a binary downloaded by hand, fetch the bundle from the same release and point `--bundle` at it:
+A pass means those exact bytes came out of syl4's release pipeline. **If it fails, do not run the binary —
+tell your syl4 contact.** For a binary you downloaded by hand, the same signature file is on the
+[releases page](https://github.com/sylmarel/syl4-releases/releases) — point `--bundle` at your copy; the same
+command also verifies `SHA256SUMS`. On a restricted network it needs to reach `tuf-repo.github.com` and
+`tuf-repo-cdn.sigstore.dev`.
 
-```sh
-curl -fsSLO https://github.com/sylmarel/syl4-releases/releases/latest/download/syl4.attestation.jsonl
-```
+The installer never runs this check itself: it arrives with the download, so anyone able to replace the binary
+could equally delete the check.
 
-Either way, a pass proves these exact bytes were produced by syl4's build workflow from a specific source
-commit. `install.sh` does not run this check itself: it is fetched from the same place as the binary, so a
-self-check would prove nothing that whoever replaced the binary could not also edit out.
+### Where the `--repo` and `--signer-workflow` values come from
 
-`--repo sylmarel/sylpy` is the part that carries the guarantee. The signature on its own only proves that _some_
-workflow built the file — anyone can obtain a valid signature for their own file from their own repository — so
-it is the identity you pin that ties the download to this project. Verification reaches
-`tuf-repo.github.com` and `tuf-repo-cdn.sigstore.dev` for trust material; allow those two if your network
-restricts outbound traffic.
+Those two values are what make the check worth running. A signature on its own proves only that _some_ build
+pipeline produced the file — anyone can sign their own file from their own project, and `--repo` on its own
+accepts any workflow in the named repository. Naming both the project and the exact workflow is what ties the
+download to us.
 
-`SHA256SUMS`, which the installer checks automatically, is a weaker and different guarantee: it is served from
-the same release as the binaries, so it detects a corrupted or truncated download but not a substituted one.
+So they have to reach you from somewhere other than the download — and this page is not it. It is served from
+the same repository as the binaries, so anyone who could swap a binary here could edit these lines too.
+
+Ask the person who invited you to syl4 to send you the verify command, and run the one they send. If it does
+not match the one above, stop and tell them. Today that is the only route to these values we do not also
+control; publishing them on a syl4-owned domain is what will remove the need to ask, and that is not done yet.
 
 ## About this repository
 
-It holds published artifacts only. `install.sh` and this README are generated from the source repository and
-overwritten on every release — they should be changed there, not here. Issues and pull requests are not tracked
-in this repository.
+It holds published releases, plus the two files the install flow needs — `install.sh` and this page. syl4's
+source repository is private, and `curl` cannot download from a private repository, which is why the releases
+live here. Both files are written and reviewed in the source repository and overwritten here on every release,
+so edits made here would not survive. Issues and pull requests are not monitored — for help, ask your syl4
+contact, the person who gave you your cluster address.

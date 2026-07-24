@@ -27,8 +27,8 @@
 #     (pinned to the release installed) and prints the command. A script
 #     cannot attest to its own integrity: it arrives from the same origin
 #     as the binary, so whoever could swap the binary could equally strip
-#     the check or retarget --repo and still print "verified". It would
-#     also mean depending on gh, which is not on a stock box.
+#     the check or retarget the identity flags and still print "verified".
+#     It would also mean depending on gh, which is not on a stock box.
 #   - curl does not set com.apple.quarantine, so no xattr step is
 #     needed on macOS (the browser-download friction this replaces).
 #   - Installs to a no-sudo location, ~/.syl4/bin by default.
@@ -39,12 +39,19 @@
 
 set -u
 
+# Single-quote a value for copy-paste into a shell. The commands this
+# script prints are meant to be pasted and run, and an install dir with a
+# space in it otherwise emits a line that silently parses as extra
+# arguments — worst of all for the verify command, where the user would
+# conclude verification is broken rather than that the path was unquoted.
+shell_quote() {
+    printf "'%s'" "$(printf '%s' "$1" | sed "s/'/'\\\\''/g")"
+}
+
 # Detail lines after the first are indented under it, so a multi-line
 # error still reads as one message. Passing them as separate arguments
-# (rather than embedding newlines in one string) also keeps this file
-# free of column-0 string continuations — which is what lets the
-# truncation guard in tests/scripts/test_install_sh.py stay a simple
-# "nothing outside main() does anything" check.
+# rather than embedding newlines in one string also keeps this file free
+# of column-0 string continuations, which would read as top-level code.
 fail() {
     echo "install.sh: error: $1" >&2
     shift
@@ -56,7 +63,14 @@ fail() {
 
 main() {
     REPO="sylmarel/syl4-releases"
+    SOURCE_REPO="sylmarel/sylpy"
+    SIGNER_WORKFLOW="$SOURCE_REPO/.github/workflows/cli-release.yml"
     BUNDLE="syl4.attestation.jsonl"
+    # HOME is not guaranteed (service managers, minimal containers, cron).
+    # Naming the override beats `set -u` aborting with a bare line number.
+    if [ -z "${SYL4_INSTALL_DIR:-}" ] && [ -z "${HOME:-}" ]; then
+        fail "HOME is not set — pass SYL4_INSTALL_DIR=<dir> to choose where to install"
+    fi
     INSTALL_DIR="${SYL4_INSTALL_DIR:-$HOME/.syl4/bin}"
     VERSION="${SYL4_VERSION:-}"
 
@@ -98,7 +112,23 @@ main() {
     fi
 
     tmp="$(mktemp -d "${TMPDIR:-/tmp}/syl4-install.XXXXXX")" || fail "mktemp failed"
-    trap 'rm -rf "$tmp"' EXIT INT TERM
+
+    # Staging now happens inside $INSTALL_DIR (so the executable bit is set
+    # on a file that is already on the destination filesystem), which puts
+    # it outside $tmp and therefore outside the old trap. Clean both, cover
+    # HUP as well as INT/TERM, and exit non-zero on a signal: without the
+    # explicit exit the trap returns and the script carries on with a
+    # deleted temp dir, reporting a successful install and exit 0.
+    staged=""
+    staged_bundle=""
+    cleanup() {
+        rm -rf "$tmp"
+        [ -n "$staged" ] && rm -f "$staged"
+        [ -n "$staged_bundle" ] && rm -f "$staged_bundle"
+        return 0
+    }
+    trap cleanup EXIT
+    trap 'cleanup; exit 130' INT TERM HUP
 
     echo "Downloading $asset (${VERSION:-latest})..."
     curl -fsSL --proto '=https' -o "$tmp/$asset" "$base/$asset" \
@@ -113,10 +143,29 @@ main() {
     #
     # Non-fatal: a release predating the bundle, or a blip fetching it, must
     # not sink an install whose binary already checksum-verified.
+    #
+    # "absent" and "could not fetch" are reported differently on purpose. A
+    # network attacker who cannot break TLS CAN still reset this one
+    # connection, and answering that with "no bundle published" would state,
+    # as fact, that there is nothing to verify — quietly retiring the only
+    # check that survives a release compromise.
+    #
+    # Branch on the HTTP status, not on curl's exit code. curl's code for a
+    # 404 depends on the negotiated protocol — GitHub over HTTP/2 exits 56,
+    # the same URL forced to HTTP/1.1 exits 22 — so an exit-code test both
+    # misses real 404s and lumps 403/407/5xx in with them. Hence -w rather
+    # than -f here.
     have_bundle=0
-    if curl -fsSL --proto '=https' -o "$tmp/$BUNDLE" "$base/$BUNDLE"; then
-        have_bundle=1
-    fi
+    bundle_status=missing
+    bundle_code="$(curl -sSL --proto '=https' -o "$tmp/$BUNDLE" \
+        -w '%{http_code}' "$base/$BUNDLE" 2>/dev/null || true)"
+    case "${bundle_code:-000}" in
+        200) have_bundle=1 ;;
+        404) bundle_status=missing ;;
+        *) bundle_status=fetch_failed ;;
+    esac
+    # Without -f, a non-200 leaves the error body in the file.
+    [ "$have_bundle" = 1 ] || rm -f "$tmp/$BUNDLE"
 
     # --- verify before making executable ---------------------------------
     want="$(awk -v a="$asset" '$2 == a { print $1 }' "$tmp/SHA256SUMS")"
@@ -129,54 +178,127 @@ main() {
     echo "Checksum verified."
 
     # --- install ----------------------------------------------------------
+    # Staged inside the destination directory, then renamed. `mv` across
+    # filesystems degrades to copy-then-unlink, and TMPDIR on tmpfs with
+    # $HOME on disk is the common Linux layout — so a copy interrupted by a
+    # full disk or a quota would leave a truncated file that chmod had
+    # already made executable, breaking the guarantee above. A same-directory
+    # rename is atomic, and also replaces a running binary safely.
     mkdir -p "$INSTALL_DIR" || fail "cannot create $INSTALL_DIR"
-    chmod +x "$tmp/$asset"
-    mv -f "$tmp/$asset" "$INSTALL_DIR/syl4" || fail "cannot install to $INSTALL_DIR"
+    staged="$INSTALL_DIR/.syl4.incoming.$$"
+    if ! cp "$tmp/$asset" "$staged"; then
+        fail "cannot write to $INSTALL_DIR"
+    fi
+    chmod +x "$staged"
+    mv -f "$staged" "$INSTALL_DIR/syl4" || fail "cannot install to $INSTALL_DIR"
+    staged=""
     if [ "$have_bundle" = 1 ]; then
-        mv -f "$tmp/$BUNDLE" "$INSTALL_DIR/$BUNDLE" || fail "cannot install to $INSTALL_DIR"
+        staged_bundle="$INSTALL_DIR/$BUNDLE.incoming.$$"
+        if cp "$tmp/$BUNDLE" "$staged_bundle" \
+            && mv -f "$staged_bundle" "$INSTALL_DIR/$BUNDLE"; then
+            staged_bundle=""
+        else
+            # Distinct from fetch_failed: the download succeeded and it is
+            # the local save that failed, so "retry the download" would be
+            # the wrong advice.
+            rm -f "$staged_bundle"
+            staged_bundle=""
+            have_bundle=0
+            bundle_status=save_failed
+        fi
     fi
 
-    echo "Installed $("$INSTALL_DIR/syl4" version 2>/dev/null || echo syl4) to $INSTALL_DIR/syl4"
+    installed_version="$("$INSTALL_DIR/syl4" version 2>/dev/null)"
+    echo "Installed syl4 ${installed_version:-(version unknown)} to $INSTALL_DIR/syl4"
 
-    # Printed, never performed. This script is fetched from the same origin
-    # as the binary, so a self-check proves nothing: whoever could swap the
-    # binary could delete these lines or point --repo at a repository of
-    # their own and still print "verified". Verification only means
-    # something run separately, against an identity confirmed somewhere
-    # this output cannot reach.
-    if [ "$have_bundle" = 1 ]; then
-        echo ""
-        echo "Provenance bundle saved to $INSTALL_DIR/$BUNDLE."
-        echo "It was NOT checked here. To verify the binary yourself:"
-        echo ""
-        echo "  gh attestation verify $INSTALL_DIR/syl4 \\"
-        echo "    --bundle $INSTALL_DIR/$BUNDLE --repo sylmarel/sylpy"
-        echo ""
-        echo "Confirm that --repo value at https://github.com/$REPO —"
-        echo "installer output is not a source to trust it from."
-    else
-        echo ""
-        echo "No provenance bundle published for this release; nothing to verify against."
-    fi
-
-    # A fresh binary is not usable until `syl4 setup` has validated the
-    # container engine and registered the MCP server + skill, so name it
-    # as the next step — spelled with the full path when the install dir
-    # is not on PATH, so the line is copy-pasteable either way.
+    # The next command comes before the optional security block: almost
+    # everyone wants it, and burying it under eight lines of provenance text
+    # is how it gets missed. `syl4 setup` needs the cluster address from the
+    # invite — without it the command exits non-zero, so naming it bare
+    # would send every first-time user straight into an error.
     setup_cmd="syl4 setup"
     case ":$PATH:" in
         *":$INSTALL_DIR:"*) ;;
         *)
-            setup_cmd="$INSTALL_DIR/syl4 setup"
+            setup_cmd="$(shell_quote "$INSTALL_DIR/syl4") setup"
+            # Both HOME and SHELL are dereferenced defensively: `set -u` is
+            # on, and neither is guaranteed (dash does not set SHELL, and a
+            # container or service manager may set neither). Getting this
+            # wrong aborts AFTER a successful install, taking the next-step
+            # and provenance output with it. Anything we cannot place
+            # confidently — fish, ksh, no SHELL, no HOME — gets the
+            # shell-agnostic line rather than one aimed at the wrong file.
+            rc_file=""
+            rc_shell=""
+            if [ -n "${HOME:-}" ]; then
+                rc_shell_name="${SHELL:-}"
+                case "${rc_shell_name##*/}" in
+                    bash) rc_file="$HOME/.bashrc"; rc_shell=bash ;;
+                    zsh) rc_file="$HOME/.zshrc"; rc_shell=zsh ;;
+                    *) ;;
+                esac
+            fi
+            # $PATH stays literal in the emitted text: it is expanded when
+            # the startup file is read, not now.
+            path_line="export PATH=\"$INSTALL_DIR:\$PATH\""
             echo ""
-            echo "$INSTALL_DIR is not on your PATH. Add it with:"
-            echo ""
-            echo "  echo 'export PATH=\"$INSTALL_DIR:\$PATH\"' >> ~/.zshrc && exec zsh"
+            echo "$INSTALL_DIR is not on your PATH."
+            if [ -n "$rc_file" ]; then
+                echo "Add it with:"
+                echo ""
+                echo "  echo $(shell_quote "$path_line") >> $(shell_quote "$rc_file") && exec $rc_shell"
+            else
+                echo "Add this line to your shell's startup file:"
+                echo ""
+                echo "  $path_line"
+            fi
             ;;
     esac
 
     echo ""
-    echo "Next: $setup_cmd"
+    echo "Next: connect to your cluster, using the address from your invite:"
+    echo ""
+    echo "  SYL4_ADDR=<your cluster address> $setup_cmd"
+
+    # Printed, never performed. This script arrives with the download, so a
+    # self-check proves nothing: whoever could swap the binary could delete
+    # these lines or point --signer-workflow at something of their own and
+    # still print "verified". Note the identity is NOT sourced from here or
+    # from any page this script could name — every one of those is inside
+    # the same blast radius. The person who invited the user is not.
+    if [ "$have_bundle" = 1 ]; then
+        echo ""
+        echo "A signature file was saved to $INSTALL_DIR/$BUNDLE."
+        echo "The installer did not check it — a check that arrives with the"
+        echo "download cannot vouch for the download. To verify it yourself"
+        echo "(needs GitHub's gh CLI, but no GitHub account):"
+        echo ""
+        echo "  gh attestation verify $(shell_quote "$INSTALL_DIR/syl4") \\"
+        echo "    --bundle $(shell_quote "$INSTALL_DIR/$BUNDLE") \\"
+        echo "    --repo $SOURCE_REPO --signer-workflow $SIGNER_WORKFLOW"
+        echo ""
+        echo "Those last two values are what make the check mean anything,"
+        echo "and this output cannot vouch for them either. Ask whoever"
+        echo "invited you to syl4 to send you that command, and run theirs."
+        echo "If the check fails, do not run the binary — tell them."
+    elif [ "$bundle_status" = fetch_failed ]; then
+        echo ""
+        echo "Could not download the signature file for this release, so there"
+        echo "was nothing to save. This is a download failure, not a missing"
+        echo "signature. To retry:"
+        echo ""
+        echo "  curl -fsSLO --proto '=https' $base/$BUNDLE"
+    elif [ "$bundle_status" = save_failed ]; then
+        echo ""
+        echo "The signature file downloaded but could not be saved to"
+        echo "$INSTALL_DIR. The binary is installed; re-run the installer to"
+        echo "retry, or fetch the signature yourself:"
+        echo ""
+        echo "  curl -fsSLO --proto '=https' $base/$BUNDLE"
+    else
+        echo ""
+        echo "This release has no signature file, so there is nothing to verify."
+    fi
 }
 
 main "$@"
