@@ -47,7 +47,10 @@ address from your invite" for users joining a private cluster.
 Derive the gateway address from the answer:
 
 - already contains `://` → use it as-is
-- otherwise → `https://<answer>`
+- fully qualified (contains a `.`) → `https://<answer>`
+- a bare name, not fully qualified → qualify it with `sylfor.ai`:
+  `https://<answer>.sylfor.ai` — so the default `demo` becomes
+  `https://demo.sylfor.ai`
 
 ## 3. Run setup
 
