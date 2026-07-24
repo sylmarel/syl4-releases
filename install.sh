@@ -1,37 +1,23 @@
 #!/bin/sh
-# Install the syl4 CLI from the public release repo (#773).
+# Install the syl4 CLI.
 #
 #   curl -fsSL https://raw.githubusercontent.com/sylmarel/syl4-releases/main/install.sh | sh
 #
-# Source of truth is cli/install.sh in the sylpy monorepo; cli-release.yml
-# syncs it to syl4-releases/main on every publish. Design constraints:
-#   - POSIX sh only: must run under a bare `| sh` on a fresh macOS or
-#     Linux box (no bash-isms, no external deps beyond curl + a sha256
-#     tool, both present on stock macOS and every mainstream distro).
-#   - Everything executable lives in main(), invoked on the LAST line.
-#     `sh` reads a pipe incrementally and runs what it has, so a dropped
-#     connection mid-download otherwise executes a prefix of the script.
-#     The statement order here happens to make that survivable (the
-#     install comes after the checksum gate, so a prefix either does
-#     nothing or finishes a verified install), but the wrapper makes a
-#     truncated fetch a strict no-op instead — the guarantee no longer
-#     rests on nobody ever reordering these steps.
-#   - The binary's checksum is verified against the release's SHA256SUMS
-#     BEFORE chmod +x, so a download that arrived corrupt or truncated
-#     never becomes executable.
-#     This is NOT a tamper defense and must not be described as one:
-#     SHA256SUMS ships from the same release as the binary, so anyone
-#     able to replace one can replace both.
-#   - Provenance is the check that does survive that, and this script
-#     deliberately does not perform it — it only fetches the bundle
-#     (pinned to the release installed) and prints the command. A script
-#     cannot attest to its own integrity: it arrives from the same origin
-#     as the binary, so whoever could swap the binary could equally strip
-#     the check or retarget the identity flags and still print "verified".
-#     It would also mean depending on gh, which is not on a stock box.
-#   - curl does not set com.apple.quarantine, so no xattr step is
-#     needed on macOS (the browser-download friction this replaces).
-#   - Installs to a no-sudo location, ~/.syl4/bin by default.
+# What it does, and why it is safe to run:
+#   - POSIX sh only, with no dependencies beyond curl and a sha256 tool,
+#     both present on a stock macOS or Linux box.
+#   - Everything runs from main(), called on the last line, so a download
+#     cut short by a dropped connection executes nothing.
+#   - The binary is checked against the release's SHA256SUMS before it is
+#     made executable, so a corrupt or truncated download never runs. That
+#     detects a damaged download, not a substituted one — SHA256SUMS comes
+#     from the same place as the binary. Provenance is the check for that.
+#   - It downloads the provenance bundle and prints the command to verify
+#     it, but never runs that check itself: a script fetched alongside the
+#     binary cannot vouch for the binary, and verifying needs gh, which a
+#     stock box does not have.
+#   - curl sets no com.apple.quarantine, so macOS needs no xattr step.
+#   - Installs to ~/.syl4/bin (no sudo) by default.
 #
 # Environment overrides:
 #   SYL4_VERSION      release tag to install (e.g. v0.0.1); default: latest
