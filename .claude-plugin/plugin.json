@@ -1,0 +1,12 @@
+{
+  "name": "syl4",
+  "displayName": "syl4",
+  "description": "Runs prompts reliably using syl4 — for example: syl4 what is the sum of first 100 integers. /syl4:install downloads the syl4 CLI, connects it to your server, and signs you in.",
+  "author": {
+    "name": "Sylmarel",
+    "url": "https://github.com/sylmarel"
+  },
+  "homepage": "https://github.com/sylmarel/syl4-releases",
+  "repository": "https://github.com/sylmarel/syl4-releases",
+  "keywords": ["syl4", "verified-programs", "data"]
+}
