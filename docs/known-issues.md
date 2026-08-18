@@ -33,7 +33,7 @@ match a registry entry by that exact name — there's no fuzzy matching or
 per-run override today. If a datasource is renamed on the cluster side, the
 local connection has to be re-registered under the new name.
 
-## No self-serve engine choice beyond MySQL, PostgreSQL, and Amazon Redshift
+## No self-serve engine choice beyond MySQL
 
 Other database engines aren't supported yet. If you need one, ask your syl4
 contact — they can tell you where it sits on the roadmap.
