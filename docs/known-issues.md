@@ -68,6 +68,15 @@ still get through. If something looks off — a reading that doesn't match
 your question, a plan that seems needlessly convoluted — tell your syl4
 contact with the session id. These reports are how both get better.
 
+## The syl4ish summary doesn't always render before a run executes
+
+The confirm-before-you-run step — `syl4ish` showing you its plain-language
+reading of the question so you can catch a wrong interpretation first — is
+meant to appear ahead of every execution, but it doesn't always show up.
+Treat a missing summary as a bug, not confirmation that everything is fine,
+and report it (with the session id) to your syl4 contact the same way as
+other `syl4ish` issues above.
+
 ## Generated SQL doesn't read like hand-written SQL
 
 The SQL syl4 derives from the verified program is correct, but it's
