@@ -27,7 +27,7 @@ Full prerequisites, setup, connecting your data, and asking your first question 
 ## About this repository
 
 It holds published releases, the two files the script install flow needs — `install.sh` and this page — and
-the Claude Code plugin (`.claude-plugin/`, `skills/`, and `scripts/`). syl4's source repository is private, and
+the Claude Code plugin (`.claude-plugin/`, `skills/`, `scripts/`, and `hooks/`). syl4's source repository is private, and
 `curl` cannot download from a private repository, which is why the releases live here. `install.sh` and this
 page are written and reviewed in the source repository and overwritten here on every release, so edits made
 here directly would not survive — the `docs/` folder is maintained in this repository directly. Issues and

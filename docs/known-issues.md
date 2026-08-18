@@ -12,8 +12,8 @@ applies to that binary.
 
 ## Skill install is project-scoped by default
 
-Since the project-scoped-install change, `syl4 setup` installs the Claude
-Code skill to `./.claude/skills` under the directory you ran it from, not
+`syl4 setup` installs the Claude Code skill to `./.claude/skills` under the
+directory you ran it from, not
 `~/.claude/skills`. A session opened in a different directory won't see the
 skill unless you pass `--global` (installs for every session) or open
 Claude Code from that same project.

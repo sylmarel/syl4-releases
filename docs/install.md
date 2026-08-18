@@ -20,6 +20,16 @@ to connect your data.
 
 ## Step 1 — Install the CLI
 
+**If you installed the syl4 [Claude Code plugin](https://github.com/sylmarel/syl4-releases)
+from this repository's marketplace** (`/plugin install syl4@syl4`), stop here
+— the plugin runs its own guided install (`/syl4:install`) that ends with
+`/reload-plugins` rather than the steps below, and running `syl4 setup`
+without `--skip-mcp` after installing the plugin registers a second,
+colliding `syl4` MCP server. See
+[troubleshooting.md](./troubleshooting.md#the-syl4-mcp-server-appears-twice-or-is-broken-after-installing-the-plugin)
+if you've already hit that. This page is for everyone else: opencode, other
+harnesses, or the terminal-only route.
+
 ```sh
 curl -fsSL https://raw.githubusercontent.com/sylmarel/syl4-releases/main/install.sh | sh
 ```
@@ -99,9 +109,11 @@ Use the address you were given when you were invited.
 names itself with install instructions, so nothing is left half-installed —
 then signs you in through your browser, registers the syl4 MCP server with
 Claude Code, and installs the syl4 skill, scoped to the current project's
-`./.claude/skills` by default (pass `--global` to install it for every
-Claude Code session instead). Re-running `setup` later is safe: it upgrades
-the skill in place and never moves an already-recorded install.
+`./.claude/skills` by default. Re-running `setup` later with no scope flag
+is safe and upgrades the skill in place without moving it; passing
+`--global` (every Claude Code session) or `--project` explicitly switches
+the install to that scope and sweeps the copy at the previous location, so
+exactly one stays installed.
 
 At a terminal, `setup` ends by offering to register your first datasource
 connection:
@@ -147,11 +159,14 @@ end, which is expected, not a typo.
 ## Step 3 — Ask your first question
 
 Open Claude Code in the directory where you ran `setup` (or anywhere, if you
-installed with `--global`). The syl4 MCP server needs one more thing before
-it can run tools: **run `/mcp` and authorize the `syl4` server** — this is a
-separate, Claude-Code-side OAuth step from the sign-in `setup` already did
-for the CLI itself, and Claude Code will prompt for it again if a session's
-authorization ever expires.
+installed with `--global`). The syl4 MCP server registered in step 2 needs
+one more thing before it can run tools: **run `/mcp` and authorize the
+`syl4` server** — this is a separate, Claude-Code-side OAuth step from the
+sign-in `setup` already did for the CLI itself, and Claude Code will prompt
+for it again if a session's authorization ever expires. (This is the
+script-install route's connect step — if you used the Claude Code plugin
+instead, the equivalent step is `/reload-plugins`, per the plugin's own
+install skill, not `/mcp`.)
 
 Once `/mcp` shows `syl4` as connected, prefix any prompt with `syl4`:
 
