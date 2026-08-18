@@ -52,6 +52,31 @@ itself and shows you the reading it picked so you can correct it — it
 doesn't yet interrupt with a specific question ("two customers match
 _Acme_ — which one?"). That's on the roadmap.
 
+## syl4 isn't performance-optimized yet
+
+The current focus is correctness, not speed. A run — especially the first
+time a question is asked, before it's served from the plan cache — can be
+slower than a hand-tuned query against the same database. Treat latency as
+a work in progress, not a reflection of what the verified result is worth.
+
+## syl4ish and the SQL agent can still get things wrong — please report it
+
+Both the plain-language reading `syl4ish` shows you and the program the SQL
+agent plans from are LLM-drafted before they're checked; the checks catch a
+lot, but not everything, and a wrong reading or an oddly-planned query can
+still get through. If something looks off — a reading that doesn't match
+your question, a plan that seems needlessly convoluted — tell your syl4
+contact with the session id. These reports are how both get better.
+
+## Generated SQL doesn't read like hand-written SQL
+
+The SQL syl4 derives from the verified program is correct, but it's
+generated from the program's structure, not written the way a human DBA
+would write it — expect a different join order, more CTEs or subqueries
+than you'd reach for by hand, and query shapes optimized for provable
+correctness over idiom. Pull it with `get_run_sql` before a run executes if
+you want to see exactly what will run (see [highlights.md](./highlights.md)).
+
 ## This repository's issues and pull requests aren't monitored
 
 For help, ask the person who invited you to syl4 — the person who gave you
