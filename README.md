@@ -8,27 +8,17 @@ into a typed, formally verified program and derives the SQL from that — the sa
 
 ## Quick start
 
-If you use Claude Code, the plugin in this repository handles download, `syl4 setup`, and sign-in in one guided
-run:
-
-```text
-/plugin marketplace add sylmarel/syl4-releases
-/plugin install syl4@syl4
-```
-
-Otherwise, install with the script:
-
 ```sh
 curl -fsSL https://raw.githubusercontent.com/sylmarel/syl4-releases/main/install.sh | sh
 ```
 
-Full prerequisites, both install routes, setup, connecting your data, and asking your first question are in
+Full prerequisites, setup, connecting your data, and asking your first question are in
 [`docs/install.md`](docs/install.md).
 
 ## Documentation
 
-- **[Install](docs/install.md)** — prerequisites, the plugin and script install routes, verifying what you
-  downloaded, one-time setup, connecting a datasource, and asking your first question.
+- **[Install](docs/install.md)** — prerequisites, the install script, verifying what you downloaded,
+  one-time setup, connecting a datasource, and asking your first question.
 - **[Troubleshooting](docs/troubleshooting.md)** — common errors and how to fix them.
 - **[Known issues](docs/known-issues.md)** — current limitations worth knowing before you hit them.
 - **[Highlights](docs/highlights.md)** — why syl4 for text-to-SQL: confirmed interpretations, cached plans,

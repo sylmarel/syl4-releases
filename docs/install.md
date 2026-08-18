@@ -1,8 +1,8 @@
 # Installing syl4
 
 Everything needed to go from a fresh machine to your first verified run: what
-you need first, both install routes, how to verify what you downloaded, and
-how to connect your data.
+you need first, how to install, how to verify what you downloaded, and how
+to connect your data.
 
 ## Prerequisites
 
@@ -19,30 +19,6 @@ how to connect your data.
   Redshift**.
 
 ## Step 1 — Install the CLI
-
-### Option A: as a Claude Code plugin (recommended if you use Claude Code)
-
-The plugin in this repository wraps download, `syl4 setup`, and sign-in into
-one guided run. In Claude Code:
-
-```text
-/plugin marketplace add sylmarel/syl4-releases
-/plugin install syl4@syl4
-```
-
-Your next Claude Code session notices syl4 isn't set up yet and offers to
-finish the job; saying yes (or running `/syl4:install` yourself) asks which
-server domain to connect to (default `demo`, for `demo.sylfor.ai` — a bare
-name is qualified with `sylfor.ai`), downloads the binary with the same
-checksum-verified installer described below, runs `syl4 setup`, signs you
-in, and connects the syl4 MCP server via `/reload-plugins` — no session
-restart. The plugin ships the MCP server itself; the proxy it starts needs
-Node.js (`npx`) on `PATH`.
-
-### Option B: the install script
-
-Use this for opencode or any other harness, or if you'd rather not use the
-plugin flow.
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/sylmarel/syl4-releases/main/install.sh | sh
@@ -117,8 +93,7 @@ send — if it doesn't match the one above, stop and tell them.
 SYL4_ADDR=<your cluster address> syl4 setup
 ```
 
-Use the address you were given when you were invited (the plugin route asks
-for this interactively instead).
+Use the address you were given when you were invited.
 
 `setup` checks every prerequisite before writing any state — a missing one
 names itself with install instructions, so nothing is left half-installed —
