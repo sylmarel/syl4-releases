@@ -33,8 +33,8 @@ here (a grounded clarifying question, rather than a reading to correct).
 ## Caching — define once, answer fast forever
 
 The formalize–plan–verify pipeline is a **one-time cost per definition**,
-not a per-question tax. Once a question has been defined, it serves from the
-plan cache:
+not a per-question tax. Once a question has been formalized, it serves from
+the plan cache:
 
 - Repeat and templated questions ("that report, for March") reuse the
   cached plan at interactive latency — no model in the loop on the serving
@@ -67,6 +67,9 @@ customer") and it becomes a first-class, reviewed concept:
   about active customers gets _your_ active customers, in every question
   that follows.
 
+How to submit one, and how to track it through review, is in
+[using.md](./using.md#teach-syl4-a-definition).
+
 ## Optional SQL review — the exact SQL, on demand
 
 Before a prepared run executes, you can pull the **exact SQL statements it
@@ -79,7 +82,8 @@ summarized. Nothing is executed to produce the listing.
   review is a step you can insert where your process wants one, not a
   correctness requirement. Teams that want eyes on every statement pull the
   listing before executing; teams that don't lose no guarantee by skipping
-  it.
+  it. How to ask for it is in
+  [using.md](./using.md#review-the-sql-before-a-run-executes).
 
 ## The takeaway
 
