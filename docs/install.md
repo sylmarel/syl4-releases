@@ -185,6 +185,11 @@ watch the run get formalized, planned, and verified in the cloud, then
 executed next to your data, and you can inspect the typed program it ran,
 not just the answer.
 
+From here, [using.md](./using.md) covers everything else you can do in a
+session — teaching syl4 your vocabulary, reviewing the SQL before a run,
+inspecting past runs — and [cli.md](./cli.md) is the full command
+reference.
+
 ## Something not working?
 
 See [troubleshooting.md](./troubleshooting.md) for common failures and

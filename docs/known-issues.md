@@ -83,8 +83,9 @@ The SQL syl4 derives from the verified program is correct, but it's
 generated from the program's structure, not written the way a human DBA
 would write it — expect a different join order, more CTEs or subqueries
 than you'd reach for by hand, and query shapes optimized for provable
-correctness over idiom. Pull it with `get_run_sql` before a run executes if
-you want to see exactly what will run (see [highlights.md](./highlights.md)).
+correctness over idiom. Pull it before a run executes if you want to see
+exactly what will run (see
+[using.md](./using.md#review-the-sql-before-a-run-executes)).
 
 ## This repository's issues and pull requests aren't monitored
 

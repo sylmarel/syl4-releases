@@ -19,6 +19,10 @@ Full prerequisites, setup, connecting your data, and asking your first question 
 
 - **[Install](docs/install.md)** — prerequisites, the install script, verifying what you downloaded,
   one-time setup, connecting a datasource, and asking your first question.
+- **[Using syl4](docs/using.md)** — everything after the first question: judging readings, teaching
+  definitions, reviewing SQL, inspecting and cancelling runs.
+- **[CLI reference](docs/cli.md)** — every `syl4` command and flag: connections, credentials,
+  execution, telemetry, uninstall.
 - **[Troubleshooting](docs/troubleshooting.md)** — common errors and how to fix them.
 - **[Known issues](docs/known-issues.md)** — current limitations worth knowing before you hit them.
 - **[Highlights](docs/highlights.md)** — why syl4 for text-to-SQL: confirmed interpretations, cached plans,

@@ -67,6 +67,9 @@ customer") and it becomes a first-class, reviewed concept:
   about active customers gets _your_ active customers, in every question
   that follows.
 
+How to submit one, and how to track it through review, is in
+[using.md](./using.md#teach-syl4-a-definition).
+
 ## Optional SQL review — the exact SQL, on demand
 
 Before a prepared run executes, you can pull the **exact SQL statements it
@@ -79,7 +82,8 @@ summarized. Nothing is executed to produce the listing.
   review is a step you can insert where your process wants one, not a
   correctness requirement. Teams that want eyes on every statement pull the
   listing before executing; teams that don't lose no guarantee by skipping
-  it.
+  it. How to ask for it is in
+  [using.md](./using.md#review-the-sql-before-a-run-executes).
 
 ## The takeaway
 
