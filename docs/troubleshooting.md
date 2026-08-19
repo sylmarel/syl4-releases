@@ -76,16 +76,18 @@ name mismatch, not a missing credential.
 ## `error: connection "<name>" already exists`
 
 Re-registering a name that's already in the registry. Overwrite it with
-`syl4 connections add --force --url-stdin <name>` (pastes the URL at a
-hidden prompt, same as a first-time registration — avoid passing the URL
-as a plain argument, which puts the credential in your shell history and
-process list), or pick a different name if you meant to add a second
-connection.
+`syl4 connections add --force --url-stdin <name>`, which pastes the URL at
+a hidden prompt just like a first-time registration — or pick a different
+name if you meant to add a second connection. Avoid passing the URL as a
+plain argument: that puts the credential in your shell history and process
+list.
 
 ## The syl4 MCP server appears twice, or is broken, after installing the plugin
 
-The Claude Code plugin this repository ships (`/plugin install syl4@syl4`)
-owns and registers its own `syl4` MCP server — its guided install
+The Claude Code plugin this repository ships
+(`/plugin marketplace add sylmarel/syl4-releases`, then
+`/plugin install syl4@syl4`) owns and registers its own `syl4` MCP server
+— its guided install
 (`/syl4:install`) always runs `syl4 setup --skip-mcp` for exactly this
 reason. Running a bare `syl4 setup` (the route in
 [install.md](./install.md)) after installing the plugin registers a second,

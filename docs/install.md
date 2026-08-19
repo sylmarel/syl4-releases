@@ -6,8 +6,8 @@ to connect your data.
 
 ## Prerequisites
 
-- **macOS or Linux.** Windows has no install script — see
-  [Windows](#windows) below.
+- **macOS or Linux** for the install script below. On Windows you
+  download the binary by hand instead — see [Windows](#windows) below.
 - **A container engine, running** — Docker, Podman, or nerdctl. syl4 runs
   each query in a sandboxed container; `setup` checks that the engine's
   daemon is actually up, not merely installed.
@@ -21,7 +21,9 @@ to connect your data.
 ## Step 1 — Install the CLI
 
 **If you installed the syl4 [Claude Code plugin](https://github.com/sylmarel/syl4-releases)
-from this repository's marketplace** (`/plugin install syl4@syl4`), stop here
+from this repository's marketplace**
+(`/plugin marketplace add sylmarel/syl4-releases`, then
+`/plugin install syl4@syl4`), stop here
 — the plugin runs its own guided install (`/syl4:install`) that ends with
 `/reload-plugins` rather than the steps below, and running `syl4 setup`
 without `--skip-mcp` after installing the plugin registers a second,
@@ -57,7 +59,8 @@ directory has to be one you can write to without `sudo`.
 
 There's no install script. Download `syl4-windows-<arch>.exe` from the
 [releases page](https://github.com/sylmarel/syl4-releases/releases). To
-remove syl4 later, run `syl4 unregister`, then delete `~/.syl4`.
+remove syl4 later, run `syl4 unregister`, then delete the `.syl4` folder
+in your user profile (`%USERPROFILE%\.syl4`).
 
 ## Verifying what you downloaded
 
@@ -80,12 +83,20 @@ A pass means those exact bytes came out of syl4's release pipeline. **If it
 fails, do not run the binary — tell your syl4 contact.** For a binary you
 downloaded by hand, the same signature file is on the
 [releases page](https://github.com/sylmarel/syl4-releases/releases) — point
-`--bundle` at your copy; the same command also verifies `SHA256SUMS`. On a
-restricted network it needs to reach `tuf-repo.github.com` and
-`tuf-repo-cdn.sigstore.dev`.
+`--bundle` at your copy. The same command with `SHA256SUMS` in place of
+the binary path verifies that file too. On a restricted network the check
+needs to reach `tuf-repo.github.com` and `tuf-repo-cdn.sigstore.dev`.
 
 Installing with `SYL4_SHOW_VERIFY=1` set makes the installer print this
-command for you, filled in with your paths. The installer never runs the
+command for you, filled in with your paths:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/sylmarel/syl4-releases/main/install.sh \
+  | SYL4_SHOW_VERIFY=1 sh
+```
+
+Like the version pin above, the setting goes after the `|`, in front of
+`sh`. The installer never runs the
 check itself: it arrives with the download, so anyone able to replace the
 binary could equally delete the check.
 
@@ -165,8 +176,9 @@ end, which is expected, not a typo.
 
 ## Step 3 — Ask your first question
 
-Open Claude Code in the directory where you ran `setup` (or anywhere, if you
-installed with `--global`). The syl4 MCP server registered in step 2 needs
+Open Claude Code in the directory where you ran `setup` — that's where the
+skills were installed (with `--global` any directory works; the MCP server
+itself is registered machine-wide either way). The syl4 MCP server needs
 one more thing before it can run tools: **run `/mcp` and authorize the
 `syl4` server** — this is a separate, Claude-Code-side OAuth step from the
 sign-in `setup` already did for the CLI itself, and Claude Code will prompt

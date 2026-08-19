@@ -12,11 +12,10 @@ applies to that binary.
 
 ## Skill install is project-scoped by default
 
-`syl4 setup` installs the Claude Code skill to `./.claude/skills` under the
-directory you ran it from, not
-`~/.claude/skills`. A session opened in a different directory won't see the
-skill unless you pass `--global` (installs for every session) or open
-Claude Code from that same project.
+`syl4 setup` installs the Claude Code skills to `./.claude/skills` under
+the directory you ran it from, not `~/.claude/skills`. A session opened in
+a different directory won't see them unless you pass `--global` (installs
+for every session) or open Claude Code from that same project.
 
 ## MCP authorization and CLI sign-in are two separate steps
 
@@ -33,9 +32,9 @@ match a registry entry by that exact name — there's no fuzzy matching or
 per-run override today. If a datasource is renamed on the cluster side, the
 local connection has to be re-registered under the new name.
 
-## No self-serve engine choice beyond MySQL
+## No self-serve database support beyond MySQL
 
-Other database engines aren't supported yet. If you need one, ask your syl4
+Other databases aren't supported yet. If you need one, ask your syl4
 contact — they can tell you where it sits on the roadmap.
 
 ## The natural-language write path isn't shipped yet
@@ -45,9 +44,9 @@ Today's syl4 is read-only: it answers questions. Natural-language
 commits is on the roadmap, not available in this release. See
 [highlights.md](./highlights.md) for what does ship today.
 
-## `syl4ish` doesn't yet ask a grounded clarifying question
+## syl4ish doesn't yet ask a grounded clarifying question
 
-When your prompt is ambiguous, `syl4ish` currently resolves the ambiguity
+When your prompt is ambiguous, syl4ish currently resolves the ambiguity
 itself and shows you the reading it picked so you can correct it — it
 doesn't yet interrupt with a specific question ("two customers match
 _Acme_ — which one?"). That's on the roadmap.
@@ -61,7 +60,7 @@ a work in progress, not a reflection of what the verified result is worth.
 
 ## syl4ish and the SQL agent can still get things wrong — please report it
 
-Both the plain-language reading `syl4ish` shows you and the program the SQL
+Both the plain-language reading syl4ish shows you and the program the SQL
 agent plans from are LLM-drafted before they're checked; the checks catch a
 lot, but not everything, and a wrong reading or an oddly-planned query can
 still get through. If something looks off — a reading that doesn't match
@@ -72,12 +71,12 @@ better.
 
 ## The syl4ish summary doesn't always render before a run executes
 
-The confirm-before-you-run step — `syl4ish` showing you its plain-language
+The confirm-before-you-run step — syl4ish showing you its plain-language
 reading of the question so you can catch a wrong interpretation first — is
 meant to appear ahead of every execution, but it doesn't always show up.
 Treat a missing summary as a bug, not confirmation that everything is fine,
 and report it (with the run id) to your syl4 contact the same way as other
-`syl4ish` issues above.
+syl4ish issues above.
 
 ## Generated SQL doesn't read like hand-written SQL
 

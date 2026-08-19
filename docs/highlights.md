@@ -33,8 +33,8 @@ here (a grounded clarifying question, rather than a reading to correct).
 ## Caching — define once, answer fast forever
 
 The formalize–plan–verify pipeline is a **one-time cost per definition**,
-not a per-question tax. Once a question has been defined, it serves from the
-plan cache:
+not a per-question tax. Once a question has been formalized, it serves from
+the plan cache:
 
 - Repeat and templated questions ("that report, for March") reuse the
   cached plan at interactive latency — no model in the loop on the serving
