@@ -30,10 +30,11 @@ SYL4_ADDR=<your cluster address> syl4 setup
 | `--global` / `--project` | Install the Claude Code skill for every session (`~/.claude/skills`) or this project (`./.claude/skills`, the default for a first install). Passing either explicitly moves the install to that scope. |
 | `--skip-mcp` | Skip Claude Code MCP registration — the terminal-only route. |
 | `--skip-skill` | Skip installing the syl4 skill. |
+| `--skip-benchmark` | Skip extracting the raw-LLM benchmark to `~/.syl4/benchmarks/bird` and installing the no-syl4 skill (implied by `--skip-skill`). |
 | `--skip-login` | Skip the browser sign-in; run `syl4 login` later. For headless or remote boxes. |
 
 At a terminal, `setup` ends by offering to register your first datasource
-connection — see [`syl4 connections`](#syl4-connections) below.
+connection — see [`syl4 connections`](#syl4-connections--the-datasource-registry) below.
 
 ## `syl4 login` / `syl4 logout`
 
@@ -51,10 +52,10 @@ syl4 -i                     # read questions interactively
 ```
 
 Runs prompts end to end — cloud synthesis, then local execution — with no
-chat host. It shares `execute`'s flags below (`--network`,
-`--connections`, `--env`, `--env-file`, `--telemetry`, `--engine`,
-`--image`), plus `--flavor` to override the deployment's default plan
-flavor for each run.
+chat host. It shares `execute`'s flags below (`--addr`, `--network`,
+`--connections`, `--env`, `--env-file`, `--no-report`, `--telemetry`,
+`--engine`, `--image`), plus `--flavor` to override the deployment's
+default plan flavor for each run.
 
 ## `syl4 execute` — run a prepared run
 
@@ -159,7 +160,8 @@ quickest check that an install or upgrade landed.
 | Path | What it holds |
 | --- | --- |
 | `bin/syl4` | The binary (default install location). |
-| `config.json` | The cluster address `setup` stored. |
+| `config.json` | The cluster address `setup` stored (non-secret). |
+| `credentials.json` | The stored sign-in token (mode 0600), written by `setup`/`login`, removed and revoked by `logout`/`unregister`. `credentials.lock` sits beside it. |
 | `connections.yaml` | The datasource registry — names and URLs, no passwords. |
 | `env` | `KEY=VALUE` credentials (mode 0600), referenced as `${VAR}` from connection URLs. |
 | `executions/<run_id>/` | Per-run execution records: `result.txt`, `executor.log`, `meta.json`, captured telemetry. |

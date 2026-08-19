@@ -27,11 +27,12 @@ says is what will be computed.
   say so in plain words. The formalization is revised and you get a new
   reading to judge. You can go around this loop as many times as it takes.
 
-An accepted question is remembered: ask it again, word for word, and it
-comes back from the plan cache in seconds, byte-for-byte the same program.
-Repeating a question verbatim (or asking Claude to re-run a previous one
-unchanged) is how you get that speed; rewording it, even trivially, makes
-it a new question.
+An accepted question is remembered: ask it again and it comes back from
+the plan cache in seconds, byte-for-byte the same program. The match
+forgives capitalization and spacing, but not rewording — repeating a
+question in the same words (or asking Claude to re-run a previous one
+unchanged) is how you get that speed; rephrasing it makes it a new
+question.
 
 Two caveats worth knowing: the reading doesn't always render before
 execution (treat a missing one as a bug and
@@ -119,10 +120,11 @@ Every run leaves a full audit trail you can ask about in plain language:
 - **The SQL it ran** (`get_run_sql`) — the same listing as above works
   after execution too.
 
-One question usually spans two run ids — one per validation round, plus
-the execution run — and Claude reports both. You don't need to bookkeep
-them: "show me my recent runs" (`list_runs`) lists the history, so a past
-run is findable by its prompt.
+One question spans several run ids — one per validation round, plus the
+execution run — and Claude reports the two that matter: the accepted
+round and the execution run. You don't need to bookkeep any of them:
+"show me my recent runs" (`list_runs`) lists the history, so a past run
+is findable by its prompt.
 
 The execution side lives on your machine, too:
 `~/.syl4/executions/<run_id>/` holds the program's output (`result.txt`),
