@@ -115,7 +115,7 @@ tell your syl4 contact** and confirm whether the failure is network-shaped
 
 `syl4 unregister` reverses what `setup` wrote — the MCP registration, the
 installed skill(s), the stored execution credential (revoked at the
-gateway), and `~/.syl4/config.json` — after a confirmation prompt (`--yes`
+cluster), and `~/.syl4/config.json` — after a confirmation prompt (`--yes`
 skips it). It leaves `connections.yaml` and `~/.syl4/env` alone. To remove
 everything, including your registered connections, delete `~/.syl4` after
 unregistering.

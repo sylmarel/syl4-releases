@@ -115,6 +115,13 @@ is safe and upgrades the skill in place without moving it; passing
 the install to that scope and sweeps the copy at the previous location, so
 exactly one stays installed.
 
+Alongside the syl4 skill, `setup` installs a small demo extra: the
+**`no-syl4`** skill and a bundled benchmark it runs (extracted to
+`~/.syl4/benchmarks/bird`). Invoking `/no-syl4` in a session runs a
+question through a plain, unverified LLM call — no formalization, no
+proofs — so you can put its SQL and answer side by side with a syl4 run
+of the same question. Pass `--skip-benchmark` to leave the pair out.
+
 At a terminal, `setup` ends by offering to register your first datasource
 connection:
 

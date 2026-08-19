@@ -7,17 +7,21 @@ session, Claude runs `syl4 execute` for you — but it's what the
 terminal-only route uses, and it's where connections, credentials, and
 telemetry are managed. `syl4 <command> -h` prints each command's flags.
 
-Commands that talk to the cluster take `--addr <gateway-url>`; without it
-they use `SYL4_ADDR`, then the address `setup` stored in
+Commands that talk to the cluster take `--addr <cluster-address>`; without
+it they use `SYL4_ADDR`, then the address `setup` stored in
 `~/.syl4/config.json`. You normally set the address once, at setup, and
-never pass it again.
+never pass it again. The CLI's own help and error text call this the
+**gateway address** — same URL, the cluster's front door.
 
 ## `syl4 setup`
 
 One-time setup, covered step by step in [install.md](./install.md): checks
 every prerequisite before writing any state, signs you in through your
 browser, registers the syl4 MCP server with Claude Code, and installs the
-syl4 skill. Safe to re-run; a re-run upgrades the skill in place.
+Claude Code skills — the syl4 skill, plus a demo extra: the `no-syl4`
+skill and the benchmark it runs (what that pair is for is in
+[install.md](./install.md#step-2--one-time-setup)). Safe to re-run; a
+re-run upgrades the skills in place.
 
 ```sh
 SYL4_ADDR=<your cluster address> syl4 setup
@@ -25,12 +29,12 @@ SYL4_ADDR=<your cluster address> syl4 setup
 
 | Flag | What it does |
 | --- | --- |
-| `--addr <gateway-url>` | Cluster address (or `SYL4_ADDR`). |
+| `--addr <cluster-address>` | Cluster address (or `SYL4_ADDR`). |
 | `--engine <name>` | Container engine: `docker`, `podman`, or `nerdctl` (default: `SYL4_ENGINE`, then detection). |
-| `--global` / `--project` | Install the Claude Code skill for every session (`~/.claude/skills`) or this project (`./.claude/skills`, the default for a first install). Passing either explicitly moves the install to that scope. |
+| `--global` / `--project` | Install the Claude Code skills for every session (`~/.claude/skills`) or this project (`./.claude/skills`, the default for a first install). Passing either explicitly moves the install to that scope. |
 | `--skip-mcp` | Skip Claude Code MCP registration — the terminal-only route. |
 | `--skip-skill` | Skip installing the syl4 skill. |
-| `--skip-benchmark` | Skip extracting the raw-LLM benchmark to `~/.syl4/benchmarks/bird` and installing the no-syl4 skill (implied by `--skip-skill`). |
+| `--skip-benchmark` | Skip the demo extra: the benchmark `setup` extracts to `~/.syl4/benchmarks/bird` and the `no-syl4` skill that runs it (implied by `--skip-skill`). |
 | `--skip-login` | Skip the browser sign-in; run `syl4 login` later. For headless or remote boxes. |
 
 At a terminal, `setup` ends by offering to register your first datasource
@@ -142,11 +146,13 @@ re-runs anything.
 ## `syl4 unregister`
 
 Reverses what `setup` wrote on this machine: the MCP registration, the
-installed skill, the stored sign-in credential (revoked at the cluster
-first), and the stored cluster address. Everything it removes is
-ownership-checked — it skips, with an explanation, anything it didn't
-install. Your data stays: execution records and the connection registry
-under `~/.syl4` are always kept. `--yes` skips the confirmation prompt.
+installed skills (`syl4` and `no-syl4`), the extracted benchmark (deleted
+wholesale, including any edits you made under it), the stored sign-in
+credential (revoked at the cluster first), and the stored cluster address.
+Everything it removes is ownership-checked — it skips, with an
+explanation, anything it didn't install. Your data stays: execution
+records, the connection registry, and `~/.syl4/env` (your datasource
+credentials) are always kept. `--yes` skips the confirmation prompt.
 
 To remove syl4 entirely, run `syl4 unregister`, then delete `~/.syl4`.
 
@@ -164,4 +170,5 @@ quickest check that an install or upgrade landed.
 | `credentials.json` | The stored sign-in token (mode 0600), written by `setup`/`login`, removed and revoked by `logout`/`unregister`. `credentials.lock` sits beside it. |
 | `connections.yaml` | The datasource registry — names and URLs, no passwords. |
 | `env` | `KEY=VALUE` credentials (mode 0600), referenced as `${VAR}` from connection URLs. |
+| `benchmarks/bird/` | The demo benchmark `setup` extracts for the `no-syl4` skill. Removed by `unregister`. |
 | `executions/<run_id>/` | Per-run execution records: `result.txt`, `executor.log`, `meta.json`, captured telemetry. |
