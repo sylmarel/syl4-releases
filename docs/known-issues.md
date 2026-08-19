@@ -34,8 +34,11 @@ local connection has to be re-registered under the new name.
 
 ## No self-serve database support beyond MySQL
 
-Other databases aren't supported yet. If you need one, ask your syl4
-contact — they can tell you where it sits on the roadmap.
+Other databases aren't supported yet. The tooling already accepts
+`postgresql://` and `redshift://` connection URLs, so registering one
+succeeds — but runs against those engines aren't served yet. If you need
+one, ask your syl4 contact — they can tell you where it sits on the
+roadmap.
 
 ## The natural-language write path isn't shipped yet
 

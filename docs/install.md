@@ -15,8 +15,10 @@ to connect your data.
   Required unless you take the terminal-only route (`syl4 -i "<question>"`,
   `setup --skip-mcp`).
 - Connection details (host, database, credentials) for the database you want
-  to ask questions of. syl4 supports **MySQL, PostgreSQL, and Amazon
-  Redshift**.
+  to ask questions of. syl4 supports **MySQL** today. The CLI also accepts
+  `postgresql://` and `redshift://` connection URLs ahead of support for
+  those engines — see
+  [known-issues.md](./known-issues.md#no-self-serve-database-support-beyond-mysql).
 
 ## Step 1 — Install the CLI
 
